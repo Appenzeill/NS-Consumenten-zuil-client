@@ -1,0 +1,481 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart';
+
+import './routes/detail.dart';
+
+//import './routes/reviews.dart';
+
+void main() {
+  runApp(new MaterialApp(
+      theme: ThemeData(
+        primaryColor: Color(0xFFF0A714),
+      ),
+      title: "NSZL",
+      debugShowCheckedModeBanner: false,
+    home: Home(),
+  ));
+}
+
+bool CorrectData = false;
+
+
+class Home extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    
+    TextEditingController controllerPassword = new TextEditingController();
+    TextEditingController controllerEmail = new TextEditingController();
+    
+    Future<List> _login() async {
+      String username = controllerEmail.text;
+      String password = controllerPassword.text;
+      String basicAuth =
+      'Basic ' + base64Encode(utf8.encode('$username:$password'));
+      
+      final response = await get('http://127.0.0.1:5000/auth',
+        headers: <String, String>{'authorization': basicAuth});
+      //return json.decode(response.body);
+      if (json.decode(response.body) == true) {
+        Navigator.push(
+          context,
+          //username: username, password: password
+          MaterialPageRoute(builder: (context) => new Menu(basicAuth: basicAuth)),
+        );
+        } else {
+          print("Fail");
+        }
+        //print(response.body);
+        //print(CorrectData);
+      }
+    
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Color(0xFFF0A714),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.
+            center,
+            children: [
+              SizedBox(height: 80,),
+              Image.asset(
+                'images/ns_logo.png',
+                height: 100,
+                width: 150,
+              ),
+              Text('NSZL',
+                style: TextStyle(
+                  color: Color(0xFF000066),
+                  fontSize: 20,  
+                ),
+              ),
+              SizedBox(height: 30,),
+              Container(
+                //width: MediaQuery.of(context).size.width * 0.8,
+                //height: MediaQuery.of(context).size.height * 0.6,
+                
+                constraints: BoxConstraints(minWidth: 350, maxWidth: 1000),
+                padding: EdgeInsets.all(10),
+                    
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height:30,),
+                    Text(
+                      'Menu',
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    SizedBox(height: 30,),
+                    Container(
+                      width: 250,
+                      child: TextField(
+                        controller: controllerEmail,                
+                        decoration: InputDecoration(
+                          labelText: 'Email',
+                          suffixIcon: Icon(FontAwesomeIcons.envelope,
+                            size: 17,
+                          ),
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 250,
+                      child: TextField(
+                        controller: controllerPassword,  
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          labelText: 'Wachtwoord',
+                          suffixIcon: Icon(FontAwesomeIcons.key,
+                            size: 17,
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height:40,),
+                    GestureDetector(
+                      onTap: () {
+                        _login();
+                      },
+                     child: Container(
+                       alignment: Alignment.center,
+                       width: 250,
+                       decoration: BoxDecoration(
+                         borderRadius: BorderRadius.circular(50),
+                         gradient: LinearGradient(
+                           begin: Alignment.centerLeft,
+                           end: Alignment.centerRight,
+                           colors: [
+                             Color(0xFF000066),                              
+                             Color(0xFF000066),
+                           ]
+                         )
+                       ),
+                       child: Padding(
+                         padding: EdgeInsets.all(12.0),
+                         child: Text('login',
+                           style: TextStyle(
+                             color: Colors.white,
+                             fontSize: 20,
+                             fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 80,),
+                    RaisedButton(
+                      child: Text('Gebruikers Paneel'),  
+                      textColor: Colors.white, 
+                      color: Color(0xFF000066),
+                      onPressed: () {  
+                        Navigator.push(  
+                          context,  
+                          MaterialPageRoute(builder: (context) => Review()),  
+                        );                     
+                      },   
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Review extends StatelessWidget {
+
+  TextEditingController controllerReview = new TextEditingController();
+  TextEditingController controllerConsent = new TextEditingController();
+  TextEditingController controllerName = new TextEditingController();
+  
+  void addReview(){
+    var url = "http://127.0.0.1:5000/reviews/insert";
+
+    post(url,body: {
+        "review": controllerReview.text,
+        "consent": controllerConsent.text,
+        "name": controllerName.text
+    });
+    controllerReview.clear();
+    controllerConsent.clear();
+    controllerName.clear();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Color(0xFFF0A714),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.
+            center,
+            children: [
+              SizedBox(height: 80,),
+              Image.asset(
+                'images/ns_logo.png',
+                height: 100,
+                width: 150,
+              ),
+              Text('NSZL',
+                style: TextStyle(
+                  color: Color(0xFF000066),
+                  fontSize: 20,  
+                ),
+              ),
+              SizedBox(height: 30,),
+              Container(
+                constraints: BoxConstraints(minWidth: 700, maxWidth: 1000),
+                padding: EdgeInsets.all(10),
+                    
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height:30,),
+                    Text(
+                      'Menu',
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+                    new TextField(
+                      controller: controllerName,
+                      decoration: new InputDecoration(
+                        hintText: "Leeg voor anoniem", labelText: "Naam"),
+                    ),
+                    new TextField(
+                      controller: controllerReview,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(140),
+                      ],
+                      decoration: new InputDecoration(
+                        hintText: "Review", labelText: "Maximaal 140 characters"),
+                    ),
+                    new TextField(
+                      controller: controllerConsent,
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(140),
+                      ],
+                      decoration: new InputDecoration(
+                        hintText: "Ja of Nee", labelText: "Toestemming"),
+                    ),
+                    SizedBox(height: 80,),
+                    GestureDetector(
+                      onTap: () {
+                        addReview();
+                        Review();
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: 250,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(50),
+                          gradient: LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [
+                              Color(0xFF000066),                              
+                              Color(0xFF000066),
+                            ]
+                          )
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(12.0),
+                          child: Text('Verstuur review',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 30,),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+class ReviewsList extends StatefulWidget {
+  //Menu({this.basicAuth});
+  //final String basicAuth;
+  @override
+  _HomeState createState() => new _HomeState();
+}
+
+class _HomeState extends State<ReviewsList> {
+  //_HomeState({this.basicAuth});
+  //final String basicAuth;
+  
+  Future<List> getData() async {
+    String username = 'Admin@gmail.com';
+    String password = 'admin';
+    String basicAuth =
+    'Basic ' + base64Encode(utf8.encode('$username:$password'));
+    //print(basicAuth);
+
+    final response = await get('http://127.0.0.1:5000/reviews/list',
+      headers: <String, String>{'authorization': basicAuth});
+    return json.decode(response.body);
+  }
+
+  Future<List> getAuth() async {
+    String username = 'Admin@gmail.com';
+    String password = 'admin';
+    String basicAuth =
+    'Basic ' + base64Encode(utf8.encode('$username:$password'));
+    print(basicAuth);
+
+    final response = await get('http://127.0.0.1:5000/auth',
+      headers: <String, String>{'authorization': basicAuth});
+    //return json.decode(response.body);
+    if (json.decode(response.body) == true) {
+      print("Succes");
+      CorrectData = true;
+    } else {
+      CorrectData = false;
+
+    }
+    //print(response.body);
+    print(CorrectData);
+  }
+
+  
+  @override
+  Widget build(BuildContext context) {
+    return new Scaffold(
+      appBar: new AppBar(title: new Text("NSZL"),),
+      body: new FutureBuilder<List>(
+        future: getData(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) print(snapshot.error);
+
+          return snapshot.hasData ? new ItemList(
+            list: snapshot.data,
+          ) : new Center(
+            child: new CircularProgressIndicator(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ItemList extends StatelessWidget {
+  final List list;
+  ItemList({this.list});
+  
+  @override
+  Widget build(BuildContext context) {
+    return new ListView.builder(
+      itemCount: list==null ? 0 : list.length,
+      itemBuilder: (context, i) {
+        return new Container(
+          padding: const EdgeInsets.all(10.0),
+          child: new GestureDetector(
+            onTap: ()=>Navigator.of(context).push(
+              new MaterialPageRoute(
+                builder: (BuildContext context)=> new Detail(list:list, index:i,)
+              )
+            ),
+            child: new Card(
+              child: new ListTile(
+                title: new Text(list[i][2]),
+                leading: new Icon(Icons.widgets),
+                subtitle: new Text(list[i][1]),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+class Menu extends StatelessWidget {
+
+  Menu({this.basicAuth});
+  final String basicAuth;
+
+
+  //print(username);
+  //print(password);
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          color: Color(0xFFF0A714),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.
+            center,
+            children: [
+              SizedBox(height: 30,),
+              Container(
+                constraints: BoxConstraints(minWidth: 700, maxWidth: 1000, minHeight: 650),
+                padding: EdgeInsets.all(10),
+                    
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height:30,),
+                    Text(
+                      "Menu",
+                      style: TextStyle(
+                        fontSize: 35,
+                        fontWeight: FontWeight.bold
+                      ),
+                    ),
+
+                    SizedBox(height: 60,),
+                    RaisedButton(
+                      child: Text('Reviews'),  
+                      textColor: Colors.white, 
+                      color: Color(0xFF000066),
+                      onPressed: () {  
+                        Navigator.push(  
+                          context,  
+                          MaterialPageRoute(builder: (context) => ReviewsList()),  
+                        );                     
+                      },   
+                    ),
+                    SizedBox(height: 30,),
+                    RaisedButton(
+                      child: Text('Gebruikers'),  
+                      textColor: Colors.white, 
+                      color: Color(0xFF000066),
+                      onPressed: () {  
+                        Navigator.push(  
+                          context,  
+                          MaterialPageRoute(builder: (context) => ReviewsList()),  
+                        );                     
+                      },   
+                    ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
